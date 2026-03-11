@@ -1,0 +1,48 @@
+{% extends "basic_template.html" %}
+
+{% block main %}
+<div class="row">
+	<div class="col-sm-6 w-auto">
+		<div class=" card card-body mb-4">
+			<h2 class="card-title">General</h2>
+			<table class="table table-sm w-auto table-striped table-hover">
+				<tbody>
+					<tr>
+						<th scope="row">Template in AWX</th>
+						<td><a href="{{ awx_template_link }}">{{ awx_template_link }}</a></td>
+					</tr>
+					<tr>
+						<th scope="row">Playbook Path</th>
+						<td>{{ template['playbook_path'] }}</td>
+					</tr>
+					<tr>
+						<th scope="row">Organization</th>
+						<td>{{ template["awx_organisation"] }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-sm-6 w-auto">
+		<div class=" card card-body">
+			<h2 class="card-title">Variable lufa_template_infos</h2>
+
+			{% if template["template_infos"] is mapping %}
+			<table class="table table-sm w-auto">
+				<tbody>
+					{% for key, value in template["template_infos"].items() %}
+					<tr>
+						<th scope="row">{{ key }}</td>
+						<td>{{ value }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+			<p>no content</p>
+			{% endif %}
+		</div>
+	</div>
+</div>
+
+{% endblock %}

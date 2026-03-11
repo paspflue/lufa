@@ -1,0 +1,59 @@
+{% extends "basic.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+	<div class="row w-100 justify-content-center">
+		<div class="col-11 col-sm-9 col-md-7 col-lg-5 col-xl-4">
+			<div class="card shadow-lg border-0 rounded-3">
+				<div class="card-body p-4 p-md-5">
+					<!-- Logo -->
+					<div class="text-center mb-4">
+						<img src="{{ url_for('static', filename='assets/logo/lufa_logo.svg') }}" alt="LUFA Logo" height="200" class="mb-3">
+					</div>
+
+					<!-- Title -->
+					<h2 class="text-center fw-semibold mb-2">{{ login_ui.title }}</h2>
+
+					{% if login_ui.intro and login_ui.intro != '' %}
+					<p class="text-center text-muted mb-4">
+						{{ login_ui.intro }}
+					</p>
+					{% endif %}
+
+					<!-- Error Messages -->
+					{% for error, description in form.errors.items() %}
+					<div class="alert alert-danger d-flex align-items-center" role="alert">
+						<i class="fa fa-exclamation-circle me-2"></i>
+						<div>{{ error }}: {{ description }}</div>
+					</div>
+					{% endfor %}
+
+					<!-- Login Form -->
+					<form method="POST" class="mt-4">
+						<div class="mb-3">
+							<label for="username" class="form-label">{{ login_ui.username_label }}</label>
+							<div class="input-group">
+								<span class="input-group-text bg-white"><i class="fa fa-user text-muted"></i></span>
+								{{ form.username(class="form-control form-control-lg border-start-0", id="username", placeholder=login_ui.username_label, autofocus=True, autocomplete="username") }}
+							</div>
+						</div>
+						<div class="mb-4">
+							<label for="password" class="form-label">{{ login_ui.password_label }}</label>
+							<div class="input-group">
+								<span class="input-group-text bg-white"><i class="fa fa-lock text-muted"></i></span>
+								{{ form.password(class="form-control form-control-lg border-start-0", id="password", placeholder=login_ui.password_label, autocomplete="current-password") }}
+							</div>
+						</div>
+						<div class="d-grid">
+							{{ form.submit(value=(login_ui.submit_label), class="btn btn-primary btn-lg") }}
+						</div>
+						{{ form.hidden_tag() }}
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

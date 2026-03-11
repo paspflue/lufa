@@ -1,0 +1,85 @@
+{% extends "basic_template.html" %}
+
+{% block main %}
+<table id="hosts" class="display table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th scope="col">Host</th>
+			<th scope="col">Tags</th>
+			<th scope="col">Compliance Interval in Days</th>
+			<th scope="col">Compliant</th>
+			<th scope="col">Last Start Time (successful)</th>
+			<th scope="col">Job ID (successful)</th>
+		</tr>
+	</thead>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		$.fn.dataTable.luxon("yyyy-MM-dd HH:mm:ss");
+		let hosts_table = $('#hosts').DataTable({
+			ajax: {
+				url: '/data/templates/{{ tower_job_template_id }}/hosts',
+				dataSrc: 'hosts_table.data'
+			},
+			columns: [
+				{ 
+					title: "Host",
+					data: "ansible_host",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/hosts/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Tags",
+					data: "awx_tags"
+				},
+				{
+					title: "Compliance Interval in Days",
+					data: "compliance_interval",
+					type: "int",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData > 0) {
+							$(cell).addClass("fw-bold");
+						}
+  					}
+				},
+				{
+					title: "Compliant",
+					data: "compliant",
+					type: "bool",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData) {
+							$(cell).addClass( 'table-success' );
+						}else {
+							$(cell).addClass( 'table-danger' );
+						}
+					}
+
+				},
+				{
+					title: "Last Start Time (successful)",
+					data: "start_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				{ 
+					title: "Job ID (successful)",
+					data: "tower_job_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/jobs/' + data + '">' + data + '</a>';	
+					}
+				},
+			],
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis' ],
+			order: [[0, "asc"]],
+			pageLength: 100
+		});
+	
+		globalThis.refresher.setUpdaterDataTablesXhr(hosts_table);
+	});
+</script>
+{% endblock %}

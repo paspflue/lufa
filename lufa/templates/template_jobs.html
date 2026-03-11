@@ -1,0 +1,107 @@
+{% extends "basic_template.html" %}
+
+{% block main %}
+<table id="jobs" class="display table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th scope="col">Job ID</th>
+			<th scope="col">Tags</th>
+			<th scope="col">User</th>
+			<th scope="col">Schedule</th>
+			<th scope="col">Workflow</th>
+			<th scope="col">Start Time</th>
+			<th scope="col">End Time</th>
+			<th scope="col">Status</th>
+			<th scope="col">Limit</th>
+		</tr>
+	</thead>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='long-text-tooltip.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='filter-sharing.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		$.fn.dataTable.luxon("yyyy-MM-dd HH:mm:ss");
+		let jobs_table = $('#jobs').DataTable({
+			ajax: {
+				url: '/data/templates/{{ tower_job_template_id }}/jobs',
+				dataSrc: 'jobs_table.data'
+			},
+			columns: [
+				{ 
+					title: "Job ID",
+					data: "tower_job_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/jobs/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Tags",
+					data: "awx_tags"
+				},
+				{
+					title: "User",
+					data: "tower_user_name"
+				},	
+				{
+					title: "Schedule",
+					data: "tower_schedule_name"
+				},	
+				{
+					title: "Workflow",
+					data: "tower_workflow_job_name"
+				},	
+				{
+					title: "Start Time",
+					data: "start_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				{
+					title: "End Time",
+					data: "end_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				{
+					title: "Status",
+					data: "state",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData === "success" ) {
+							$(cell).addClass( 'table-success' );
+    					} else  if ( cellData === "started" ) {
+							$(cell).addClass( 'table-warning' );
+						} else  if ( cellData === "error" ) {
+                            $(cell).css('backgroundColor', 'purple')
+                            $(cell).css('color', 'white')
+						} else {
+							$(cell).addClass( 'table-danger' );
+						}
+  					}
+
+				},
+				{
+					title: "Limit",
+					data: "ansible_limit",
+					render: function (data, type, row, meta) {
+						return useLongTextTooltip(data, type);
+					}
+				},
+			],
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis', filterSharingButton() ],
+			order: [[6, "desc"]],
+			pageLength: 100
+		});
+
+		jobs_table.on('init.dt', function () {
+			setFilterFromSharedURL(jobs_table);
+		});
+	
+		globalThis.refresher.setUpdaterDataTablesXhr(jobs_table);
+
+	});
+</script>
+{% endblock %}

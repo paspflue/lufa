@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/bootstrap/bootstrap.min.css')}}">
+
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/fontawesome/css/all.min.css')}}">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo/lufa_favicon.svg') }}">
+
+    <title>Error - LUFA</title>
+</head>
+<body class="bg-light">
+    <div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+        <div class="row w-100 justify-content-center">
+            <div class="col-11 col-sm-9 col-md-7 col-lg-6 col-xl-5">
+                <div class="card shadow-lg border-0 rounded-3">
+                    <div class="card-body p-4 p-md-5 text-center">
+                        <!-- Logo -->
+                        <div class="mb-4">
+                            <img src="{{ url_for('static', filename='assets/logo/lufa_logo.svg') }}" alt="LUFA Logo" height="120" class="mb-3">
+                        </div>
+
+                        <!-- Error Icon -->
+                        <div class="mb-4">
+                            <i class="fa fa-exclamation-triangle text-warning fa-4x"></i>
+                        </div>
+
+                        <!-- Error Title -->
+                        <h3 class="fw-semibold text-secondary mb-4">{{ error_title }}</h3>
+
+                        <!-- Error Message -->
+                        {% if error_message %}
+                        <p class="text-muted mb-4">
+                            {{ error_message }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('frontend.welcome') }}" class="btn btn-primary btn-lg">
+                                <i class="fa fa-home me-2"></i>Go to Home
+                            </a>
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                                <i class="fa fa-arrow-left me-2"></i>Go Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script type="text/javascript" src="{{ url_for('static', filename='dist/bootstrap/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

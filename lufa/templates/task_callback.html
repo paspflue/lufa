@@ -1,0 +1,96 @@
+{% extends "basic.html" %}
+
+{% block title %}Callback {{ task_callback_id }}{% endblock %}
+
+{% block content %}
+<h1>Task Callback {{ task_callback_id }}</h1>
+<pre id="task_name">Loading...</pre>
+<pre id="msg">Loading...</pre>
+
+<h2>Details</h2>
+
+<table id="fancy" class="display table table-sm table-striped">
+	<thead>
+		<tr>
+			<th scope="col">Field</th>
+			<th scope="col">Value</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr id="json_code">
+		<td class="info">as json</td>
+		<td class="expand hidden">
+			<pre><code>{{ task_callback_data }}</code></pre>
+		</td>
+	</tr>
+</tbody>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{crp_nonce}}">
+
+	const data = JSON.parse($('#json_code pre code').text().toString());
+	try {
+		data.result_dump = JSON.parse(data.result_dump);
+	} catch (exception) {
+		console.error("result_dump isn't valid JSON");
+	}
+	let msg = $("#msg").text(data.result_dump.msg ?? data.result_dump.skip_reason ?? "No message.");
+	if (data.state === "ok") {
+		msg.addClass("text-success");
+	} else if (data.state === "skipped") {
+		msg.addClass("text-info");
+	} else if (data.state === "changed") {
+		msg.addClass("text-warning");
+	} else if (data.state === "started") {
+		msg.addClass("text-secondary");
+	} else {
+		// e.g. "unreachable", "failed"
+		msg.addClass("text-danger");
+	}
+	try {
+		$("#task_name").text(data.task_name);
+	} catch (exception) {
+		console.error("task_name attribute missing")
+	}
+
+	function toTableRow(key, value_td) {
+		const row = $('<tr></tr>')
+		const key_td = $('<td class="info" class="width14rem"></td>').text(key);
+		row.html(key_td).append(value_td);
+		return row;
+	}
+
+	function* toTableRows(obj) {
+		for (let [key, value] of Object.entries(obj)) {
+			let value_td = $('<td class="expand"></td>');
+			if (value === null) {
+				value_td.text("null");
+			} else if (typeof(value) === "object") {
+				let tbody = $('<tbody></tbody>');
+				for (let inside of toTableRows(value)) {
+					tbody.append(inside);
+				}
+				value_td.html($('<table class="display table table-sm table-striped"></table>').html(tbody));
+			} else {
+				value_td.html($('<pre></pre>').text(value));
+			}
+			yield toTableRow(key, value_td);
+		}
+	}
+
+	for (let row of toTableRows(data)) {
+		$('#json_code').before(row);
+	}
+	$('.info').click(function() {
+		let content = $(this).siblings('.expand');
+		if (content.is(':visible')) {
+			content.hide();
+		} else {
+			content.show();
+		}
+	});
+</script>
+{% endblock %}

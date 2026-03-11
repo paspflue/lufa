@@ -1,0 +1,68 @@
+{% extends "basic.html" %}
+
+{% block title %}Hosts{% endblock %}
+
+{% block content %}
+<h1>Hosts</h1>
+
+<table id="hosts" class="display table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th scope="col">Host</th>
+			<th scope="col">Compliant</th>
+		</tr>
+	</thead>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='limit-button.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='search-builder-anchor.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		let hosts_table = $('#hosts').DataTable({
+			ajax: {
+				url: '/data/hosts',
+				dataSrc: 'hosts_table.data'
+			},
+			columns: [
+				{ 
+					title: "Host",
+					data: "ansible_host",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/hosts/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Compliant",
+					data: "compliant",
+					type: "bool",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData) {
+							$(cell).addClass( 'table-success' );
+						}else {
+							$(cell).addClass( 'table-danger' );
+						}
+					}
+				},
+			],
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 
+				'copy', 
+				'excel', 
+				'pdf', 
+				'colvis' , 
+				getHostLimitButtonConfig(),
+			],
+			order: [[0, "asc"]],
+			pageLength: 100
+		});
+
+		globalThis.refresher.setUpdaterDataTablesXhr(hosts_table);
+	
+		hosts_table.on("init.dt", () => onAnchorTableInit(hosts_table));
+
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "basic.html" %}
+
+{% block content %}
+
+<h1>Workflow {{ tower_workflow_job_id }} - {{ tower_workflow_job_name }}</h1>
+
+<div id="status_box"></div>
+
+<ul class="nav nav-tabs mb-2">
+	<li class="nav-item">
+		<a class="nav-link {% if request.endpoint == 'frontend.workflow_overview' %}active{% endif %}"
+		href="{{ url_for('frontend.workflow_overview', tower_workflow_job_id=tower_workflow_job_id) }}">Overview</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link {% if request.endpoint == 'frontend.workflow_recaps' %}active{% endif %}"
+		href="{{ url_for('frontend.workflow_recaps', tower_workflow_job_id=tower_workflow_job_id) }}">Recaps</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link {% if request.endpoint == 'frontend.workflow_callbacks' %}active{% endif %}"
+		href="{{ url_for('frontend.workflow_callbacks', tower_workflow_job_id=tower_workflow_job_id) }}">Callbacks</a>
+	</li>
+</ul>
+
+
+<!-- page content -->
+<div class="container-fluid">
+	{% block main %}{% endblock %}
+</div>
+
+{% endblock content %}
+
+{% block styles %}
+<style nonce="{{crp_nonce}}">
+	#status_box > p {
+		display:inline-block;
+		margin-left:5px;
+		margin-right:5px;
+	}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='status-element.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+
+	$(document).ready(() => {
+		globalThis.refresher.setUpdater(refresher => {
+			let workflowJobs = [];
+
+			$.get(
+				"/data/jobs/{{ tower_workflow_job_id }}/workflowstates",
+				"json"
+			).done(function (data) {
+				workflowJobs = data;
+				setWorkflowStatus(workflowJobs)
+			});
+		});
+	});
+
+
+	function setWorkflowStatus(workflowJobs) {
+		let status_box = document.getElementById("status_box");
+		status_box.innerHTML = "";
+		for (const [i, job_info] of workflowJobs.states.entries()) {
+			let job = document.createElement("p");
+			job.innerHTML += "Job ";
+			let job_link = document.createElement("a");
+			job_link.innerHTML = job_info.tower_job_id;
+			job_link.href = "/jobs/" + job_info.tower_job_id;
+			job.appendChild(job_link);
+			job.innerHTML += " - " + job_info.tower_job_template_name + ": ";
+
+			let badge = getStatusElement(job_info.state);
+			job.appendChild(badge);
+			status_box.appendChild(job);
+			
+			if (i !== workflowJobs.states.length - 1) {
+				let devider = document.createElement("p");
+				devider.innerHTML = "→";
+				status_box.appendChild(devider);
+			}
+		}
+	}
+
+</script>
+{% block workflowscripts %}
+{% endblock workflowscripts %}
+
+{% endblock scripts%}

@@ -1,0 +1,168 @@
+{% extends "basic_workflow.html" %}
+
+{% block main %}
+<h2>Status Overview</h2>
+
+<table class="table table-bordered table-sm w-auto">
+	<thead>
+		<tr>
+			<th scope="col">started</th>
+			<th scope="col">ok</th>
+			<th scope="col">changed</th>
+			<th scope="col">unreachable</th>
+			<th scope="col">failed</th>
+			<th scope="col">skipped</th>
+			<th scope="col">rescued</th>
+			<th scope="col">ignored</th>
+		</tr>
+	</thead>
+	</tbody>
+		<tr>
+			<td id="hosts_started"></td>
+			<td class="table-success" id="hosts_ok"></td>
+			<td class="table-warning" id="hosts_changed"></td>
+			<td class="table-danger" id="hosts_unreachable"></td>
+			<td class="table-danger" id="hosts_failed"></td>
+			<td class="table-info" id="hosts_skipped"></td>
+			<td id="hosts_rescued"></td>
+			<td id="hosts_ignored"></td>
+		</tr>
+	</tbody>
+</table>
+
+<h2>Most Recent Status</h2>
+
+<table id="hosts" class="display table table-sm">
+	<thead>
+		<tr>
+			<th scope="col">Host</th>
+			<th scope="col">Job ID</th>
+			<th scope="col">Job Name</th>
+			<th scope="col">Task</th>
+			<th scope="col">Status</th>
+			<th scope="col">Time</th>
+			<th scope="col">Δt</th>
+			<th scope="col">Callback ID</th>
+		</tr>
+	</thead>
+</table>
+
+{% endblock %}
+
+{% block workflowscripts %}
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		$.fn.dataTable.luxon("yyyy-MM-dd HH:mm:ss");
+		let hosts_table = $('#hosts').DataTable({
+			ajax: {
+				url: '/data/workflows/{{ tower_workflow_job_id }}/overview',
+				dataSrc: 'hosts_table.data'
+			},
+			columns: [
+				{ 
+					title: "Host",
+					data: "ansible_host",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/hosts/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Job ID",
+					data: "tower_job_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/jobs/' + data + '">' + data + '</a>';
+					}
+				},
+				{
+					title: "Job Name",
+					data: "tower_job_template_name"
+				},
+				{ 
+					title: "Task",
+					data: "task_name",
+				},
+				{ 
+					title: "Status",
+					data: "state",
+				},
+				{ 
+					title: "Time",
+					data: "timestamp",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				{
+					title: "Δt",
+					data: "timestamp",
+					render: {
+						sort: function (data, type, row){
+							let timestamp_in_seconds = new luxon.DateTime.fromISO(data);
+							return timestamp_in_seconds.toSeconds();
+						},
+						display: function ( data, type, row ) {
+							let timestamp = new luxon.DateTime.fromISO(data);
+							return timestamp.toRelative();
+						}
+					}
+				},
+				{ 
+					title: "Callback ID",
+					data: "id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/task_callbacks/' + data + '">' + data + '</a>';
+					}
+				},
+			],
+			createdRow: function( row, data, dataIndex, cells ) {
+				// Color Codes Status of Host
+
+				if (data["state"] === "unreachable" || data["state"] === "failed"){
+					$(row).addClass("table-danger");
+				} else if (data["state"] === "changed"){
+					$(row).addClass("table-warning");
+				} else if (data["state"] === "ok"){
+					$(row).addClass("table-success");
+				} else if (data["state"] === "skipped"){
+					$(row).addClass("table-info");
+				}
+			},
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis' ],
+			order: [[0, "asc"]],
+			pageLength: 100
+		});
+		
+		hosts_table.on( 'xhr', function () {
+			/*
+			Gets executed when DataTable loads data.
+			ajax.json() is used to obtain loaded data
+			and refresh other parts of site, that are not
+			the DataTable. (For example the job status.)
+			*/
+
+			let json = hosts_table.ajax.json();
+			if (json === undefined){
+				return;
+			}
+
+			
+			// Set Values of Host State Overview Table
+			let states = {};
+			for (const line of json.host_states){
+				states[line.state] = line.count;
+			}
+		
+			document.getElementById("hosts_started").innerHTML = states["started"] ?? 0;
+			document.getElementById("hosts_ok").innerHTML = states["ok"] ?? 0;
+			document.getElementById("hosts_changed").innerHTML = states["changed"] ?? 0;
+			document.getElementById("hosts_unreachable").innerHTML = states["unreachable"] ?? 0;
+			document.getElementById("hosts_failed").innerHTML = states["failed"] ?? 0;
+			document.getElementById("hosts_skipped").innerHTML = states["skipped"] ?? 0;
+			document.getElementById("hosts_rescued").innerHTML = states["rescued"] ?? 0;
+			document.getElementById("hosts_ignored").innerHTML = states["ignored"] ?? 0;
+		});
+	
+		globalThis.refresher.setUpdaterDataTablesXhr(hosts_table);
+	});
+</script>
+{% endblock workflowscripts %}

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='dist/bootstrap/bootstrap.min.css') }}">
+
+		<!-- Font Awesome CSS -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='dist/fontawesome/css/all.min.css') }}">
+
+		<!-- DataTables CSS -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='dist/datatables/dataTables.bootstrap5.min.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='dist/datatables/buttons.bootstrap5.min.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='dist/datatables-datetime/dataTables.dateTime.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='dist/datatables/searchBuilder.bootstrap5.min.css') }}">
+
+		<!-- Favicon -->
+		<link rel="shortcut icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/logo/lufa_favicon.svg') }}">
+
+		<!-- setting font -->
+		<style nonce="{{crp_nonce}}">
+			@font-face {
+				font-family: 'Atkinson Hyperlegible';
+				font-style: italic;
+				font-weight: 400;
+				src: url("{{ url_for('static', filename='fonts/AtkinsonHyperlegible-Italic.ttf')  }}") format("truetype");
+			}
+
+			@font-face {
+				font-family: 'Atkinson Hyperlegible';
+				font-style: italic;
+				font-weight: 700;
+				src: url("{{ url_for('static', filename='fonts/AtkinsonHyperlegible-BoldItalic.ttf')  }}") format("truetype");
+			}
+
+			@font-face {
+				font-family: 'Atkinson Hyperlegible';
+				font-style: normal;
+				font-weight: 400;
+				src: url("{{ url_for('static', filename='fonts/AtkinsonHyperlegible-Regular.ttf')  }}") format("truetype");
+			}
+
+			@font-face {
+				font-family: 'Atkinson Hyperlegible';
+				font-style: normal;
+				font-weight: 700;
+				src: url("{{ url_for('static', filename='fonts/AtkinsonHyperlegible-Bold.ttf')  }}") format("truetype");
+			}
+
+			body {
+				font-family: 'Atkinson Hyperlegible', sans-serif;
+			}
+			nav { margin-bottom: 10px;}
+			table#templates, table#hosts, table#jobs, table#callbacks, table#stats, table#fancy, table#workflow_jobs { width: 100%; }
+			td#hosts_ok, td#hosts_changed, td#hosts_unreachable, td#hosts_failed, td#hosts_skipped, td#hosts_rescued, td#hosts_ignored { cursor:pointer; }
+			.textdecorationnone { text-decoration: none; }
+			.width14rem { width: 14rem; }
+			.workflows_limit { word-break: break-word; word-break: break-all; white-space: normal; }
+			pre#task_name { font-size: 1.5em; font-weight: bolder; white-space: pre-wrap; }
+			pre#msg { white-space: pre-wrap; }
+			td.expand.hidden { display: none;}
+			td.expand pre { white-space: pre-wrap; }
+		</style>
+
+		<title>{% block title %}{% endblock %} - LUFA</title>
+
+		{% block styles %}
+		{% endblock %}
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+			<div class="container-fluid">
+				<a class="navbar-brand fw-bold" href="{{ url_for('frontend.welcome') }}">
+					<img src="{{ url_for('static', filename='assets/logo/lufa_favicon.svg') }}" alt="LUFA" height="30" class="d-inline-block align-text-top me-2">
+					LUFA
+				</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					{% if current_user.is_authenticated %}
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+						<li class="nav-item">
+							<a class="nav-link" aria-current="page" href="{{ url_for('frontend.templates') }}">Templates</a>
+						</li>
+
+						<li class="nav-item">
+							<a class="nav-link" aria-current="page" href="{{ url_for('frontend.workflows') }}">Workflows</a>
+						</li>
+
+						<li class="nav-item">
+							<a class="nav-link" aria-current="page" href="{{ url_for('frontend.jobs') }}">Jobs</a>
+						</li>
+
+						<li class="nav-item">
+							<a class="nav-link" aria-current="page" href="{{ url_for('frontend.hosts') }}">Hosts</a>
+						</li>
+
+					</ul>
+
+					<form class="form-inline ms-auto pe-1">
+						<div class="form-check form-switch">
+							<input class="form-check-input bg-secondary" type="checkbox" role="switch" id="live_switch" checked aria-checked="false">
+							<label class="form-check-label" for="live_switch">live</label>
+						</div>
+					</form>
+					<div class="navbar-nav">
+						<a id="refresh_button" class="nav-link btn disabled"><i class="fa fa-refresh" aria-label="Refresh"></i></a>
+					</div>
+
+					<ul class="navbar-nav mb-2 mb-lg-0">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ url_for('version') }}">?</a>
+						</li>
+					</ul>
+					<ul class="navbar-nav mb-2 mb-lg-0">
+						<li class="nav-item dropdown">
+							<button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+								{{ current_user.username }}
+							</button>
+							<ul class="dropdown-menu dropdown-menu-end">
+								<li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+							</ul>
+						</li>
+					</ul>
+					{% endif %}
+				</div>
+			</div>
+		</nav>
+
+		<!-- page content -->
+		<div class="container-fluid">
+			{% block content %}{% endblock %}
+		</div>
+
+		<!-- jQuery (must be loaded before all other JS libraries!) -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/jquery/jquery.min.js") }}"></script>
+
+		<!-- Bootstrap JS -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/bootstrap/bootstrap.bundle.min.js") }}"></script>
+
+		<!-- DataTables JS -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/dataTables.min.js") }}"></script>
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/dataTables.bootstrap5.min.js") }}"></script>
+
+		<!-- JSZip (required for Excel export) -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/jszip/jszip.min.js") }}"></script>
+
+		<!-- DataTables Buttons -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/dataTables.buttons.min.js") }}"></script>
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/buttons.bootstrap5.min.js") }}"></script>
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/buttons.html5.min.js") }}"></script>
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/buttons.colVis.min.js") }}"></script>
+
+		<!-- DataTables DateTime (required for SearchBuilder) -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables-datetime/dataTables.dateTime.js") }}"></script>
+
+		<!-- DataTables SearchBuilder -->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/dataTables.searchBuilder.min.js") }}"></script>
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/datatables/searchBuilder.bootstrap5.min.js") }}"></script>
+
+		<!-- Luxon JS-->
+		<script type="text/javascript" src="{{ url_for("static", filename="dist/luxon/luxon.min.js") }}"></script>
+
+		<!-- datetime-luxon JS -->
+		<script type="text/javascript" src="{{ url_for("static", filename="js/datetime-luxon.js") }}"></script>
+
+		<!-- Our JSs -->
+		<script type="text/javascript" src="{{ url_for('static', filename='refresher.js') }}"></script>
+
+		<script nonce="{{crp_nonce}}">
+			globalThis.refresher = new Refresher({{ RELOAD_INTERVAL }}).setupEventListeners();
+		</script>
+		{% block scripts %}
+		{% endblock %}
+	</body>
+</html>

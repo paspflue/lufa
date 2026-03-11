@@ -1,0 +1,63 @@
+# Version control
+.git
+.gitignore
+.git-blame-ignore-revs
+.github
+
+# IDEs and editors
+.idea
+.vscode
+.devcontainer
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.venv
+venv
+env
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.nox
+
+# Linting and formatting
+.ruff_cache
+.mypy_cache
+.pylint.d
+
+# Local configuration and secrets
+config.py
+instance/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Documentation
+*.md
+README.md
+NOTICE
+LICENSE
+
+# Development only
+# requirements-dev.txt
+# tests/
+# ruff.toml

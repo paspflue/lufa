@@ -1,0 +1,89 @@
+{% extends "basic.html" %}
+
+{% block title %}Templates{% endblock %}
+
+{% block content %}
+<h1>Templates</h1>
+
+<table id="templates" class="display table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th scope="col">Template ID</th>
+			<th scope="col">Name</th>
+			<th scope="col">Playbook Path</th>
+			<th scope="col">Organization</th>
+			<th scope="col">Compliant</th>
+			<th scope="col">Compliance Interval</th>
+			<th scope="col">Last Run</th>
+		</tr>
+	</thead>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='search-builder-anchor.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		$.fn.dataTable.luxon("yyyy-MM-dd HH:mm:ss");
+		let templates_table = $('#templates').DataTable({
+			ajax: {
+				url: '/data/templates',
+				dataSrc: 'templates_table.data'
+			},
+			columns: [
+				{ 
+					title: "Template ID",
+					data: "tower_job_template_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/templates/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Name",
+					data: "tower_job_template_name"
+				},
+                {
+					title: "Playbook Path",
+					data: "playbook_path"
+				},
+				{
+					title: "Organization",
+					data: "awx_organisation"
+				},
+				{
+					title: "Compliant",
+					data: "compliant",
+					type: "bool",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData) {
+							$(cell).addClass( 'table-success' );
+						}else {
+							$(cell).addClass( 'table-danger' );
+						}
+					}
+				},
+				{
+					title: "Compliance Interval",
+					data: "compliance_interval"
+				},
+				{
+					title: "Last Run",
+					data: "start_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+
+			],
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis' ],
+			order: [[3, "desc"]],
+			pageLength: 100
+		});
+	
+		globalThis.refresher.setUpdaterDataTablesXhr(templates_table);
+
+		templates_table.on("init.dt", () => onAnchorTableInit(templates_table));
+	});
+</script>
+{% endblock %}

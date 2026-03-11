@@ -1,0 +1,17 @@
+[project]
+name = "LUFA"
+# will be replaced with git tag version
+version = "unknown-version"
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib",]
+testpaths = ["tests/integration",]
+
+[pytest]
+markers = [
+    "sqlite3: SQLite3",
+    "postgres: PostgreSQL"
+]
+
+[tool.ruff]
+line-length = 120

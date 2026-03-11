@@ -1,0 +1,223 @@
+{% extends "basic.html" %}
+
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<h1>Jobs</h1>
+
+<form class="row row-cols-lg-auto g-3 align-items-center">
+	<div class="col-12">
+		<label class="visually-hidden" for="job_id">Job ID</label>
+		<div class="input-group">
+			<div class="input-group-text">Job ID</div>
+			<input type="number" class="form-control" id="job_id" placeholder="0">
+		</div>
+	</div>
+	
+	<div class="col-12">
+		<button id="open_job" type="button" class="btn btn-primary">Open</button>
+	</div>
+</form>
+
+<hr>
+
+<form class="row row-cols-lg-auto g-3 align-items-center">
+	<div class="col-12">
+		<label class="visually-hidden" for="days">Days</label>
+		<div class="input-group">
+			<div class="input-group-text">Last</div>
+			<input type="number" class="form-control" id="days" value="3">
+			<div class="input-group-text">days</div>
+		</div>
+	</div>
+	
+	<div class="col-12">
+		<button id="show_days" type="button" class="btn btn-primary">Show</button>
+	</div>
+</form>
+
+<table id="jobs" class="display table table-sm text-nowrap table-striped table-hover">
+	<thead>
+		<tr>
+			<th scope="col">Job ID</th>
+			<th scope="col">Name</th>
+			<th scope="col">Organization</th>
+			<th scope="col">Tags</th>
+			<th scope="col">Compliance Interval in Days</th>
+			<th scope="col">User</th>
+			<th scope="col">Schedule</th>
+			<th scope="col">Workflow</th>
+			<th scope="col">Start Time</th>
+			<th scope="col">End Time</th>
+			<th scope="col">State</th>
+			<th scope="col">Limit</th>
+		</tr>
+	</thead>
+</table>
+
+{% endblock %}
+
+{% block styles %}
+<style nonce="{{crp_nonce}}">
+    /*
+    automatic word wrap in cells for long text
+    no word wrap in column headers
+    */
+	.dt-wrap {
+		white-space: normal !important;
+		word-break: break-word;
+	}
+	table.dataTable th {
+		white-space: nowrap !important;
+	}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='long-text-tooltip.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='filter-sharing.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+
+	// Job-ID handler
+	$("#open_job").click(function() {
+		let job_id = $("#job_id").val();
+		let path = "/jobs/" + job_id;
+		globalThis.location.href = path;
+	});
+	$("#job_id").keypress(function(event) {
+		let keycode = (event.keyCode ? event.keyCode : event.which);
+		if (keycode === 13) {
+      		event.preventDefault();
+			let job_id = $("#job_id").val();
+			let path = "/jobs/" + job_id;
+			globalThis.location.href = path;
+		}
+	});
+
+	// Days handler
+	$("#show_days").click(function() {
+		jobs_table.ajax.reload(null, false);
+	});
+	$("#days").keypress(function(event){
+		let keycode = (event.keyCode ? event.keyCode : event.which);
+		if (keycode === 13){
+      		event.preventDefault();
+			jobs_table.ajax.reload(null, false);
+			return false;
+		}
+	});
+
+	$(document).ready(function () {
+		// initialize jobs_table
+		$.fn.dataTable.luxon("yyyy-MM-dd HH:mm:ss");
+		let jobs_table = $('#jobs').DataTable({
+			responsive: false,
+  			autoWidth: true, // dynamic sizing based on cell content
+			columnDefs: [
+				{
+					targets: '_all',
+					className: 'dt-wrap'
+				}
+			],
+			ajax: {
+				url: '/data/jobs',
+				data: function ( d ) {
+					d.days = $("#days").val();
+				},
+				dataSrc: 'jobs_table.data'
+			},
+			columns: [
+				{ 
+					title: "Job ID",
+					data: "tower_job_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/jobs/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Name",
+					data: "tower_job_template_name"
+				},
+				{
+					title: "Organization",
+					data: "awx_organisation"
+				},
+				{
+					title: "Tags",
+					data: "awx_tags"
+				},
+				{
+					title: "Compliance Interval in Days",
+					data: "compliance_interval",
+					type: "int",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData > 0) {
+							$(cell).addClass("fw-bold");
+						}
+					}
+				},
+				{
+					title: "User",
+					data: "tower_user_name"
+				},	
+				{
+					title: "Schedule",
+					data: "tower_schedule_name"
+				},	
+				{
+					title: "Workflow",
+					data: "tower_workflow_job_name"
+				},	
+				{
+					title: "Start Time",
+					data: "start_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				{
+					title: "End Time",
+					data: "end_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				{
+					title: "State",
+					data: "state",
+					createdCell: function (cell, cellData, rowData, rowIndex, colIndex){ 
+						if ( cellData === "success" ) {
+							$(cell).addClass( 'table-success' );
+    					} else  if ( cellData === "started" ) {
+							$(cell).addClass( 'table-warning' );
+						} else  if ( cellData === "error" ) {
+                            $(cell).css('backgroundColor', 'purple')
+                            $(cell).css('color', 'white')
+						}else {
+							$(cell).addClass( 'table-danger' );
+						}
+
+  					}
+
+				},
+				{
+					title: "Limit",
+					data: "ansible_limit",
+					render: function (data, type, row, meta) {
+						return useLongTextTooltip(data, type);
+					}
+				},
+			],
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis' , filterSharingButton()],
+			order: [[8, "desc"]],
+			pageLength: 100
+		});
+
+		globalThis.refresher.setUpdaterDataTablesXhr(jobs_table);
+		
+		jobs_table.on('init.dt', function () {
+			setFilterFromSharedURL(jobs_table);
+		});
+		
+	});
+</script>
+{% endblock %}

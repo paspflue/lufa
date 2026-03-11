@@ -1,0 +1,145 @@
+{
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/v1/jobs",
+      "body": {
+        "tower_job_id": 965,
+        "tower_job_template_id": 8,
+        "tower_job_template_name": "root ansible-ping",
+        "ansible_limit": "myhost",
+        "tower_user_name": "user",
+        "awx_tags": "[\"all\"]",
+        "extra_vars": "{\"param\": \"hello world\"}",
+        "artifacts": "{}",
+        "tower_schedule_id": null,
+        "tower_schedule_name": null,
+        "tower_workflow_job_id": null,
+        "tower_workflow_job_name": null,
+        "compliance_interval": 7,
+        "template_infos": "null",
+        "playbook_path": "playbooks/ping.yml"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/tasks",
+      "body": {
+        "ansible_uuid": "f6512283-b929-8d70-58e9-000000000019",
+        "tower_job_id": 965,
+        "task_name": "Gathering Facts"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task_callbacks",
+      "body": {
+        "task_ansible_uuid": "f6512283-b929-8d70-58e9-000000000019",
+        "ansible_host": "myhost.mydomain.com",
+        "state": "started",
+        "module": "setup",
+        "result_dump": "{}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task_callbacks",
+      "body": {
+        "task_ansible_uuid": "f6512283-b929-8d70-58e9-000000000019",
+        "ansible_host": "myhost.mydomain.com",
+        "state": "ok",
+        "module": "setup",
+        "result_dump": "{\"ansible_facts\": {}, \"warnings\": [], \"deprecations\": [], \"_ansible_verbose_override\": true, \"_ansible_no_log\": false, \"changed\": false}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/tasks",
+      "body": {
+        "ansible_uuid": "f6512283-b929-8d70-58e9-000000000014",
+        "tower_job_id": 965,
+        "task_name": "ansible Ping"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task_callbacks",
+      "body": {
+        "task_ansible_uuid": "f6512283-b929-8d70-58e9-000000000014",
+        "ansible_host": "myhost.mydomain.com",
+        "state": "started",
+        "module": "ping",
+        "result_dump": "{}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task_callbacks",
+      "body": {
+        "task_ansible_uuid": "f6512283-b929-8d70-58e9-000000000014",
+        "ansible_host": "myhost.mydomain.com",
+        "state": "ok",
+        "module": "ping",
+        "result_dump": "{\"invocation\": {\"module_args\": {\"data\": \"pong\"}}, \"ping\": \"pong\", \"_ansible_no_log\": false, \"changed\": false}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/tasks",
+      "body": {
+        "ansible_uuid": "f6512283-b929-8d70-58e9-000000000015",
+        "tower_job_id": 965,
+        "task_name": "Ausgabe Infos"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task_callbacks",
+      "body": {
+        "task_ansible_uuid": "f6512283-b929-8d70-58e9-000000000015",
+        "ansible_host": "myhost.mydomain.com",
+        "state": "started",
+        "module": "debug",
+        "result_dump": "{}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task_callbacks",
+      "body": {
+        "task_ansible_uuid": "f6512283-b929-8d70-58e9-000000000015",
+        "ansible_host": "myhost.mydomain.com",
+        "state": "ok",
+        "module": "debug",
+        "result_dump": "{\"msg\": \"Ich bin ein Ubuntu 16.04. Dein Parameter lautet hello world\", \"_ansible_verbose_always\": true, \"_ansible_no_log\": false, \"changed\": false}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/jobs/965",
+      "body": {
+        "event": "finished",
+        "artifacts": "{\"test\": \"test\"}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/stats",
+      "body": {
+        "tower_job_id": 965,
+        "stats": [
+          {
+            "ansible_host": "myhost.mydomain.com",
+            "ok": 3,
+            "failed": 0,
+            "unreachable": 0,
+            "changed": 0,
+            "skipped": 0,
+            "rescued": 0,
+            "ignored": 0
+          }
+        ]
+      }
+    }
+  ]
+}

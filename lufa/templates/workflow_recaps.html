@@ -1,0 +1,101 @@
+{% extends "basic_workflow.html" %}
+
+{% block main %}
+
+<h2>Play Recaps</h2>
+<table id="stats" class="display table table-sm">
+	<thead>
+		<tr>
+			<th scope="col">Host</th>
+			<th scope="col">Job ID</th>
+			<th scope="col">Job Name</th>
+			<th scope="col">ok</th>
+			<th scope="col">changed</th>
+			<th scope="col">unreachable</th>
+			<th scope="col">failed</th>
+			<th scope="col">skipped</th>
+			<th scope="col">rescued</th>
+			<th scope="col">ignored</th>
+		</tr>
+	</thead>
+</table>
+
+{% endblock %}
+
+{% block workflowscripts %}
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		let stats_table = $('#stats').DataTable({
+			ajax: {
+				url: '/data/workflows/{{ tower_workflow_job_id }}/recaps',
+				dataSrc: 'stats_table.data'
+			},
+			columns: [
+				{ 
+					title: "Host",
+					data: "ansible_host",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/hosts/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Job ID",
+					data: "tower_job_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/jobs/' + data + '">' + data + '</a>';
+					}
+				},
+				{
+					title: "Job Name",
+					data: "tower_job_template_name"
+				},
+				{ 
+					title: "ok",
+					data: "ok",
+				},
+				{ 
+					title: "changed",
+					data: "changed",
+				},
+				{ 
+					title: "unreachable",
+					data: "unreachable",
+				},
+				{ 
+					title: "failed",
+					data: "failed",
+				},
+				{ 
+					title: "skipped",
+					data: "skipped",
+				},
+				{ 
+					title: "rescued",
+					data: "rescued",
+				},
+				{ 
+					title: "ignored",
+					data: "ignored",
+				}
+			],
+			createdRow: function( row, data, dataIndex, cells ) {
+				// Color Codes Status of Host
+
+				if (data["unreachable"] || data["failed"]){
+					$(row).addClass("table-danger");
+				} else if (data["changed"]){
+					$(row).addClass("table-warning");
+				} else {
+					$(row).addClass("table-success");
+				}
+			},
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis' ],
+			order: [[0, "asc"]],
+			pageLength: 100
+		});
+	
+		globalThis.refresher.setUpdaterDataTablesXhr(stats_table);
+	});
+</script>
+{% endblock workflowscripts %}

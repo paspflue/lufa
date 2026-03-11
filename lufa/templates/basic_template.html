@@ -1,0 +1,24 @@
+{% extends "basic.html" %}
+
+{% block content %}
+
+<h1>Template {{ tower_job_template_id }} - {{ tower_job_template_name }}</h1>
+
+<ul class="nav nav-tabs mb-2">
+	<li class="nav-item">
+		<a class="nav-link {% if request.endpoint == 'frontend.template_jobs' %}active{% endif %}"  href="{{ url_for('frontend.template_jobs', tower_job_template_id=tower_job_template_id) }}">Jobs</a>
+ 	</li>
+	<li class="nav-item">
+		<a class="nav-link {% if request.endpoint == 'frontend.template_hosts' %}active{% endif %}" href="{{ url_for('frontend.template_hosts', tower_job_template_id=tower_job_template_id) }}">Hosts</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link {% if request.endpoint == 'frontend.template_infos' %}active{% endif %}" href="{{ url_for('frontend.template_infos', tower_job_template_id=tower_job_template_id) }}">Info</a>
+	</li>
+</ul>
+
+<!-- page content -->
+<div class="container-fluid">
+    {% block main %}{% endblock %}
+</div>
+
+{% endblock content %}

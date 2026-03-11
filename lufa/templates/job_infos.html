@@ -1,0 +1,150 @@
+{% extends "basic_job.html" %}
+
+{% block main%}
+<div class="row">
+	<div class="col-12">
+		<div class="card card-body mb-4">
+			<h2 class="card-title">General</h2>
+			<div class="row">
+				<div class="col-md-6">
+					<table class="table table-sm">
+						<tbody>
+							<tr>
+								<th scope="row">Template</th>
+								<td><a href="/templates/{{ tower_job_template_id }}">{{ tower_job_template_id }}</a> - {{tower_job_template_name }}</td>
+							</tr>
+							<tr>
+								<th scope="row">User</th>
+								<td>{{ tower_user_name or '—' }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Schedule</th>
+								<td>{{ tower_schedule_name or '—' }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Workflow</th>
+								<td>{{ tower_workflow_job_name or '—' }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Tags</th>
+								<td>
+									{% if awx_tags is iterable %}
+									{% for tag in awx_tags %}<span class="badge bg-secondary me-1">{{ tag }}</span>{% endfor %}
+									{% endif %}
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">Limit</th>
+								<td class="text-break">{{ ansible_limit or '—' }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="col-md-6">
+					<table class="table table-sm">
+						<tbody>
+							<tr>
+								<th scope="row">Job in AWX</th>
+								<td><a href="{{ awx_job_link }}">{{ awx_job_link }}</a></td>
+							</tr>
+							<tr>
+								<th scope="row">Template in AWX</th>
+								<td><a href="{{ awx_template_link }}">{{ awx_template_link }}</a></td>
+							</tr>
+							<tr>
+								<th scope="row">Organization</th>
+								<td>{{ template["awx_organisation"] or '—' }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Playbook</th>
+								<td>{{ playbook_path }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Start Time</th>
+								<td>{{ start_time or '—' }}</td>
+							</tr>
+							<tr>
+								<th scope="row">End Time</th>
+								<td>{{ end_time or '—' }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-6 w-auto">
+		<div class="card card-body mb-4">
+			<div class="d-flex justify-content-between align-items-center">
+				<h2 class="card-title mb-0 me-auto">extra_vars</h2>
+				<div class="form-check form-switch ms-5">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						role="switch"
+						id="flexSwitchCheckChecked"
+						checked
+						data-bs-toggle="tooltip"
+      					data-bs-placement="top"
+						aria-checked="false"
+      					title="Show AWX variables">
+				</div>
+			</div>
+			<div class="card-text mt-3">
+				<pre id="extraVars">{{extra_vars_pretty}}</pre>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-6 w-auto">
+		<div class="card card-body mb-4">
+			<h2 class="card-title">artifacts</h2>
+			<div class="card-text">
+				{% if artifacts_pretty and artifacts_pretty != '{}' %}
+				<pre>{{artifacts_pretty}}</pre>
+				{% else %}
+				<p class="text-muted mb-0"><i class="fa fa-inbox me-2"></i>No artifacts present</p>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-6 w-auto">
+		<div class=" card card-body">
+			<h2 class="card-title">Template variable lufa_template_infos</h2>
+
+			{% if template["template_infos"] is mapping %}
+			<table class="table table-sm w-auto">
+				<tbody>
+					{% for key, value in template["template_infos"].items() %}
+					<tr>
+						<th scope="row">{{ key }}</th>
+						<td>{{ value }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+			<p class="text-muted mb-0"><i class="fa fa-inbox me-2"></i>No template info present</p>
+			{% endif %}
+
+
+		</div>
+	</div>
+</div>
+
+{% endblock main%}
+
+{% block jobscripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='job-infos-focus.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+$(document).ready(function () {
+		const extraVarsSwitch = document.getElementById("flexSwitchCheckChecked");
+		const preElement = document.getElementById("extraVars");
+		let originalData = {{ extra_vars_pretty | tojson | safe }};
+		switchExtraVars(originalData, preElement, extraVarsSwitch);
+		switchExtraVarsToolTip(extraVarsSwitch)
+	});
+</script>
+{% endblock %}

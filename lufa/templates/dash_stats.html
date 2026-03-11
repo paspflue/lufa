@@ -1,0 +1,56 @@
+{% extends "basic.html" %}
+
+{% block title %}Stats{% endblock %}
+
+{% block content %}
+<h1>Dashboard Statistics</h1>
+
+<h2>Objects</h2>
+
+<table class="table table-bordered table-sm w-auto">
+	<thead>
+		<tr>
+			<th scope="col"></th>
+			<th scope="col">Templates</th>
+			<th scope="col">Jobs</th>
+			<th scope="col">Hosts</th>
+			<th scope="col">Tasks</th>
+			<th scope="col">Task Callbacks</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for stats_time, stats in dash_stats.items() %}
+		<tr>
+			<th scope="row">{{ stats_time }}</th>
+			<td>{{ stats["templates"] }}</td>
+			<td>{{ stats["jobs"] }}</td>
+			<td>{{ stats["hosts"] }}</td>
+			<td>{{ stats["tasks"] }}</td>
+			<td>{{ stats["task_callbacks"] }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h2>Storage</h2>
+<table class="table table-bordered table-sm w-auto">
+	<thead>
+		<tr>
+			{% for head_column in db_size[0].keys() %}
+				<th scope="col">{{ head_column }}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in db_size %}
+		<tr>
+			{% for cell in row.values() %}
+			<td>{{ cell }}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+	
+
+{% endblock %}

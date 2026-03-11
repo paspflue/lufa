@@ -1,0 +1,70 @@
+{% extends "basic.html" %}
+
+{% block content %}
+
+<h1>Job {{ tower_job_id }} - {{ tower_job_template_name }}</h1>
+
+<p>
+    Status:
+    <span id="job_state"></span>
+</p>
+
+<ul class="nav nav-tabs mb-2">
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'frontend.job_hosts_overview' %}active{% endif %}"
+            href="{{ url_for('frontend.job_hosts_overview', tower_job_id=tower_job_id ) }}">Overview</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint ==  'frontend.job_recap' %}active{% endif %}"
+        href="{{ url_for('frontend.job_recap', tower_job_id=tower_job_id ) }}">Recap</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'frontend.job_callbacks' %}active{% endif %}"
+        href="{{ url_for('frontend.job_callbacks', tower_job_id=tower_job_id ) }}">Callbacks</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'frontend.job_infos' %}active{% endif %}"
+        href="{{ url_for('frontend.job_infos', tower_job_id=tower_job_id ) }}">Info</a>
+    </li>
+</ul>
+
+<!-- page content -->
+<div class="container-fluid">
+    {% block main %}{% endblock %}
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='status-element.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+
+    $(document).ready(() => {
+        globalThis.refresher.setUpdater(refresher => {
+            let jobState = "";
+
+            $.get(
+                "/data/jobs/{{ tower_job_id }}/state",
+                "json"
+            ).done(function (data) {
+                jobState = data.state;
+                writeJobStatus(jobState.state);
+                if (jobState != "started") {
+                    refresher.setEnabled(false);
+                }
+            });
+        });
+    });
+
+    function writeJobStatus(state) {
+        let box = document.getElementById("job_state");
+        box.innerHTML = "";
+        let badge = getStatusElement(state);
+        box.appendChild(badge);
+    }
+
+</script>
+{% block jobscripts %}
+{% endblock jobscripts %}
+
+{% endblock scripts%}

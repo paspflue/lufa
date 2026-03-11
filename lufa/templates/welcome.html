@@ -1,0 +1,58 @@
+{% extends "basic.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<h1>Welcome</h1>
+
+<h2>Compliance Statistics</h2>
+{% set c = compliance["compliant"] %}
+{% set not_c = compliance["not_compliant"] %}
+{% set all = c + not_c %}
+{% set c_percent = 0.0 %}
+{% set not_c_percent = 0.0 %}
+{% if all > 0 %}
+	{% set c_percent = (100 * c / all | float) %}
+	{% set not_c_percent = (100 * not_c / all | float) %}
+{% endif %}
+
+<table class="table table-bordered table-sm w-auto">
+	<thead>
+		<tr>
+			<th scope="col"></th>
+			<th scope="col">Compliant</th>
+			<th scope="col">Not Compliant</th>
+			<th scope="col">Total</th>
+		</tr>
+	</thead>
+	</tbody>
+		<tr>
+			<th scope="row">Hosts</th>
+			<td>
+				<a href='{{ url_for('frontend.hosts') }}#%7B"criteria"%3A%5B%7B"condition"%3A"%3D"%2C"data"%3A"Compliant"%2C"origData"%3A"compliant"%2C"type"%3A"bool"%2C"value"%3A%5B"true"%5D%7D%5D%2C"logic"%3A"AND"%7D'>
+					{{ c }}
+				</a>
+			</td>
+			<td>
+				<a href='{{ url_for('frontend.hosts') }}#%7B"criteria"%3A%5B%7B"condition"%3A"%3D"%2C"data"%3A"Compliant"%2C"origData"%3A"compliant"%2C"type"%3A"bool"%2C"value"%3A%5B"false"%5D%7D%5D%2C"logic"%3A"AND"%7D'>
+					{{ not_c }}
+				</a>
+			</td>
+			<td>
+				<a href="{{ url_for('frontend.hosts') }}">
+					{{ all }}
+				</a>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">%</th>
+			<td>{{ '%0.2f' | format(c_percent) }} %</td>
+			<td>{{ '%0.2f' | format(not_c_percent) }} %</td>
+			<td>100 %</td>
+		</tr>
+	</tbody>
+</table>
+
+<hr>
+
+{% endblock %}

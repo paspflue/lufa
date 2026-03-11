@@ -1,0 +1,91 @@
+{% extends "basic.html" %}
+
+{% block title %}Workflows{% endblock %}
+
+{% block content %}
+<h1>Workflows</h1>
+<p>
+	<b>Note:</b> Nested workflow jobs are not recognized by the dashboard
+	and must be opened individually.
+</p>
+
+<table id="workflow_jobs" class="display table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th scope="col">Workflow ID</th>
+			<th scope="col">Name</th>
+			<th scope="col">Tags</th>
+			<th scope="col">Limit</th>
+			<th scope="col">Contained Jobs</th>
+			<th scope="col">Start Time</th>
+		</tr>
+	</thead>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='search-builder-anchor.js') }}"></script>
+<script nonce="{{crp_nonce}}">
+	$(document).ready(function () {
+		$.fn.dataTable.luxon("yyyy-MM-dd HH:mm:ss");
+		let workflow_jobs_table = $('#workflow_jobs').DataTable({
+			ajax: {
+				url: '/data/workflows',
+				dataSrc: 'workflow_jobs_table.data'
+			},
+			columns: [
+				{ 
+					title: "Workflow ID",
+					data: "tower_workflow_job_id",
+					render: function ( data, type, row, meta ) {
+						return '<a href="/workflows/' + data + '">' + data + '</a>';	
+					}
+				},
+				{
+					title: "Name",
+					data: "tower_workflow_job_name"
+				},
+				{
+					title: "Tags",
+					data: "awx_tags",
+				},
+				{
+					title: "Limit",
+					data: "ansible_limit",
+					render: function ( data, type, row, meta ) {
+						return '<span class="workflows_limit">' + data + "</span>";
+					}
+				},
+				{
+					title: "Contained Jobs",
+					data: "count_jobs"
+				},
+				{
+					title: "Start Time",
+					data: "start_time",
+					type: "luxon-yyyy-MM-dd HH:mm:ss.ms",
+					render: DataTable.render.datetime('yyyy-MM-dd HH:mm:ss')
+				},
+				
+
+			],
+			columnDefs: [
+				{
+					targets: 3,
+					width: '40%'
+				}
+			],
+			dom: 'QBfrtip', // Add Q - Query Builder, B - Buttons
+			buttons: [ 'copy', 'excel', 'pdf', 'colvis' ],
+			order: [[3, "desc"]],
+			pageLength: 100
+		});
+	
+		globalThis.refresher.setUpdaterDataTablesXhr(workflow_jobs_table);
+
+		workflow_jobs_table.on("init.dt", () => onAnchorTableInit(workflow_jobs_table));
+
+	});
+</script>
+{% endblock %}
