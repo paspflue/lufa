@@ -10,7 +10,7 @@ jobs:
   docker_build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Checkout
@@ -65,3 +65,42 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+
+      - name: extract dist
+        shell: bash
+        run: |
+          docker create --name lufa ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}
+          mkdir -p dist
+          docker cp lufa:/lufa/lufa/static/dist lufa/static/dist/
+          docker rm lufa
+
+      - name: Create dist archive
+        run: zip -r node_dist.zip lufa/static/dist
+
+      - name: Create nightly release
+        if: ${{ steps.tag.outputs.tag == 'nightly' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          
+          gh release delete nightly -y || :
+          git push --delete origin nightly || :
+          gh release create nightly \
+                  --target ${{ github.sha }} \
+                  --prerelease \
+                  --title "LUFA nightly build $(git show -s --format="%ci")" \
+                  --notes "Automatically built node js dists for Testing" \
+                  node_dist.zip
+
+      - name: Create release
+        if: ${{ steps.tag.outputs.tag != 'nightly' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          
+          gh release create snapshot \
+                  --title "LUFA Release ${{ steps.tag.outputs.tag }} ($(git show -s --format="%cs"))" \
+                  --generate-notes \
+                  node_dist.zip
